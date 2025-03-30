@@ -9,6 +9,31 @@ import SwiftUI
 import RealityKit
 import RealityKitContent
 
+struct CustomDisclosureGroupStyle: DisclosureGroupStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack {
+            Button {
+                configuration.isExpanded.toggle()
+            } label: {
+                HStack {
+                    configuration.label
+                    Image(systemName: "chevron.down")
+                        .rotationEffect(configuration.isExpanded ? .zero : .degrees(-90))
+                        .foregroundStyle(.secondary)
+                }
+                    .padding(.horizontal)
+                    .contentShape(.hoverEffect, .rect)
+                    .hoverEffect()
+            }
+            .buttonStyle(.plain)
+            
+            if configuration.isExpanded {
+                configuration.content
+            }
+        }
+    }
+}
+
 struct ContentView: View {
     var body: some View {
         ScrollView {
@@ -22,9 +47,22 @@ struct ContentView: View {
             } label: {
                 parentView
                     .padding(10)
-                    .contentShape(.hoverEffect, .rect)
-                    .hoverEffect()
             }
+            .disclosureGroupStyle(CustomDisclosureGroupStyle())
+            
+            DisclosureGroup {
+                VStack(alignment: .listRowSeparatorLeading) {
+                    ForEach(0..<5) { _ in
+                        childView
+                    }
+                }
+                
+            } label: {
+                parentView
+                    .padding(10)
+            }
+            .contentShape(.hoverEffect, .rect)
+            .hoverEffect()
         }
         .padding()
     }
@@ -45,8 +83,8 @@ struct ContentView: View {
                         Text("There is no capsule here")
                     }
                     .padding()
-                    .contentShape(.hoverEffect, .rect)
-                    .hoverEffect()
+//                    .contentShape(.hoverEffect, .rect)
+//                    .hoverEffect()
                 }
                 .buttonStyle(.plain)
                 .padding()
