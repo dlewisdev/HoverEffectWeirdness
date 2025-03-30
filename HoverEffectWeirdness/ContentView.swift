@@ -9,6 +9,48 @@ import SwiftUI
 import RealityKit
 import RealityKitContent
 
+extension View {
+    /// Modify a view when possible.
+    /// - Parameter transform: This is designed to contain an enclosing `if` statement,
+    /// like for instance `if #available`.
+    /// `ViewBuilder`s return `nil` when `if` conditions are `false`.
+    @ViewBuilder func or(
+      @ViewBuilder _ transform: (Self) -> (some View)?
+    ) -> some View {
+      if let transformed = transform(self) { transformed } else { self }
+    }
+}
+
+private struct BareBonesDisclosureGroupStyle: DisclosureGroupStyle {
+    @State private var parentHoverEffectEnabled = true
+
+    func makeBody(configuration: Configuration) -> some View {
+        Button { configuration.isExpanded.toggle() } label: {
+            HStack {
+                configuration.label
+                VStack {
+                    let text = if parentHoverEffectEnabled {
+                        ("Disable", "")
+                    } else {
+                        ("Enable", "n't")
+                    }
+                    Button("\(text.0) parent hover effect") {
+                        parentHoverEffectEnabled.toggle()
+                    }
+                    Text("The hover effect is\(text.1) present here.")
+                        .padding(.top)
+                }
+            }.or {
+                if !parentHoverEffectEnabled {
+                    $0.hoverEffect()
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        if configuration.isExpanded { configuration.content }
+    }
+}
+
 struct ContentView: View {
     var body: some View {
         ScrollView {
@@ -25,6 +67,7 @@ struct ContentView: View {
                     .contentShape(.hoverEffect, .rect)
                     .hoverEffect()
             }
+            .disclosureGroupStyle(BareBonesDisclosureGroupStyle())
         }
         .padding()
     }
